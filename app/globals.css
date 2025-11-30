@@ -44,7 +44,7 @@
 }
 
 :root {
-  font-family:  var(--font-biome), ui-sans-serif, system-ui, sans-serif;
+  font-family:  var(--font-geist), ui-sans-serif, system-ui, sans-serif;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -120,4 +120,17 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+
+/* Hide arrows for Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Hide arrows for number input (Chrome, Safari, Edge, Opera) */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }

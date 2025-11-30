@@ -53,7 +53,7 @@ export const SelectField = ({
   const shouldShowError = fieldTouched && fieldError;
 
   const selectfieldClasses = clsx(
-    "block w-full bg-white text-black border rounded-xs py-3 px-3 text-xs focus:outline-none",
+    "block w-full bg-white text-black border rounded-lg py-3 px-3 text-xs focus:outline-none",
     shouldShowError ? "border-red-500" : "border-gray-300",
     className
   );
@@ -80,7 +80,7 @@ export const SelectField = ({
           {label}
         </Label>
       )}
-      <div className="relative mt-2 bg-white">
+      <div className="relative mt-0.5 bg-white">
         <Select
           value={value || formik?.values[name] || ""}
           onValueChange={handleChange}
@@ -91,7 +91,7 @@ export const SelectField = ({
             onBlur={handleBlur}
             className={clsx(
               selectfieldClasses,
-              "cursor-pointer flex items-center justify-between"
+              "cursor-pointer  flex items-center justify-between"
             )}
           >
             <SelectValue

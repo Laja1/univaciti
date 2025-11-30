@@ -1,24 +1,43 @@
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Home from "@/modules/course/home";
 import { Bot, House, Settings, User } from "lucide-react";
 
 const tabs = [
-  { name: "Home", value: "home", icon: House, content: <Home /> },
+  { name: "Home", value: "home", icon: House, content: <div>Home</div> },
   {
-    name: "Profile",
-    value: "profile",
+    name: "Courses",
+    value: "courses",
     icon: User,
     content: <div>Profile Page</div>,
   },
   {
-    name: "Messages",
-    value: "messages",
+    name: "Structure",
+    value: "structure",
     icon: Bot,
     content: <div>Messages Page</div>,
   },
   {
-    name: "Settings",
-    value: "settings",
+    name: "Time-Table",
+    value: "time-table",
+    icon: Settings,
+    content: <div>Settings Page</div>,
+  },
+  {
+    name: "Internship",
+    value: "internship",
+    icon: Settings,
+    content: <div>Settings Page</div>,
+  },
+  {
+    name: "Fees",
+    value: "fees",
+    icon: Settings,
+    content: <div>Settings Page</div>,
+  },
+  {
+    name: "Funding",
+    value: "funding",
     icon: Settings,
     content: <div>Settings Page</div>,
   },
@@ -37,20 +56,26 @@ export default function VerticalSeparatedTabsDemo() {
             <TabsTrigger
               key={tab.value}
               value={tab.value}
-              className="data-[state=active]:bg-[#000212] border-r border   data-[state=active]:text-primary-foreground justify-start px-3 py-1.5"
+              className="data-[state=active]:bg-[#0098DA] border-r border   data-[state=active]:text-primary-foreground justify-start px-3 py-1.5"
             >
               <tab.icon className="h-5 w-5 me-2" /> {tab.name}
             </TabsTrigger>
           ))}
         </TabsList>
       </div>
-      <div className="flex-1 ">
-        {tabs.map((tab) => (
-          <TabsContent key={tab.value} value={tab.value} className="m-0 w-full">
-            {tab.content}
-          </TabsContent>
-        ))}
-      </div>
+      <ScrollArea className="h-screen w-full">
+        <div className="flex-1 border-2 border-black p-5 rounded-2xl">
+          {tabs.map((tab) => (
+            <TabsContent
+              key={tab.value}
+              value={tab.value}
+              className="m-0 w-full"
+            >
+              {tab.content}
+            </TabsContent>
+          ))}
+        </div>
+      </ScrollArea>
     </Tabs>
   );
 }

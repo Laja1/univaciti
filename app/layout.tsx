@@ -40,14 +40,38 @@ const biome = LocalFont({
   display: "swap",
 });
 
+const geistLocal = LocalFont({
+  src: [
+    {
+      path: "../public/fonts/geist/Geist-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    // {
+    //   path: "../../public/fonts/biome/biome-Medium.woff",
+    //   weight: "500",
+    //   style: "normal",
+    // },
+    {
+      path: "../public/fonts/geist/Geist-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-geist",
+  display: "swap",
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${biome.variable}`}>
-      <body className={`${biome.variable} ${geistMono.variable} antialiased`}>
+    <html lang="en" className={`${geistLocal.variable}`}>
+      <body
+        className={`${geistLocal.variable} ${geistMono.variable} antialiased`}
+      >
         {children}
       </body>
     </html>
