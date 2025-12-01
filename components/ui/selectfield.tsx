@@ -19,13 +19,9 @@ export type SelectfieldProps = {
   name: string;
   placeholder?: string;
   label?: string;
-  register?: string;
-  labelClassname?: string;
   disabled?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   formik?: any;
   options: SelectfieldOptions[];
-  hasError?: string;
   error?: string;
   value?: string;
   className?: string;
@@ -39,17 +35,18 @@ export const SelectField = ({
   name,
   formik,
   options,
-  labelClassname,
   value,
   onChange,
   className,
   disabled,
 }: SelectfieldProps) => {
-  // Get error and touched state
+
+  // 🔥 Use getIn for nested value paths
+  const formikValue = formik ? getIn(formik.values, name) : value;
+
   const fieldError = formik ? getIn(formik.errors, name) : error;
   const fieldTouched = formik ? getIn(formik.touched, name) : false;
 
-  // Show error only if field is touched and has an error
   const shouldShowError = fieldTouched && fieldError;
 
   const selectfieldClasses = clsx(
@@ -66,7 +63,6 @@ export const SelectField = ({
     }
   };
 
-  // Handle blur to mark field as touched
   const handleBlur = () => {
     if (formik) {
       formik.setFieldTouched(name, true);
@@ -76,13 +72,14 @@ export const SelectField = ({
   return (
     <div className="w-full">
       {label && (
-        <Label htmlFor={name} className={`text-sm ${labelClassname}`}>
+        <Label htmlFor={name} className="text-sm">
           {label}
         </Label>
       )}
+
       <div className="relative mt-0.5 bg-white">
         <Select
-          value={value || formik?.values[name] || ""}
+          value={formikValue || ""}
           onValueChange={handleChange}
           disabled={disabled}
         >
@@ -91,16 +88,16 @@ export const SelectField = ({
             onBlur={handleBlur}
             className={clsx(
               selectfieldClasses,
-              "cursor-pointer  flex items-center justify-between"
+              "cursor-pointer flex items-center justify-between"
             )}
           >
             <SelectValue
               placeholder={placeholder || "Select an option"}
-              className="flex-grow placeholder:text-black"
             />
           </SelectTrigger>
+
           <SelectContent>
-            {options?.map(({ label, value }: SelectfieldOptions) => (
+            {options.map(({ label, value }) => (
               <SelectItem key={value} value={value}>
                 {label}
               </SelectItem>
@@ -108,6 +105,7 @@ export const SelectField = ({
           </SelectContent>
         </Select>
       </div>
+
       {shouldShowError && (
         <p className="text-red-500 text-xs text-left mt-1">{fieldError}</p>
       )}

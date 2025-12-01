@@ -2,51 +2,48 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SelectField } from "@/components/ui/selectfield";
-import { availableSkills, countryOptions } from "@/utils/tesa-application";
+import { availableSkills, specializationOptions } from "@/utils/tesa-application";
 import { FormikProps } from "formik";
 import { Plus, X } from "lucide-react";
 import { useState } from "react";
 
 export interface SkillsProps {
-  formik: FormikProps<SkillsFormValues>;
-}
-export interface SkillsFormValues {
-  skills: string[];
-  extraSkillSet?: string;
-  country?: string;
+  formik: FormikProps<any>;
 }
 
 export const Skills = ({ formik }: SkillsProps) => {
   const [extraSkill, setExtraSkill] = useState("");
 
+  // Access the skills array from the correct path
+  const currentSkills = formik.values.skillsInformation?.skills || [];
+
   // Toggle skill selection
   const toggleSkill = (skill: string) => {
-    const currentSkills = formik.values.skills;
     if (currentSkills.includes(skill)) {
       // Remove skill
       formik.setFieldValue(
-        "skills",
-        currentSkills.filter((s) => s !== skill)
+        "skillsInformation.skills",
+        currentSkills.filter((s: string) => s !== skill)
       );
     } else {
       // Add skill
-      formik.setFieldValue("skills", [...currentSkills, skill]);
+      formik.setFieldValue("skillsInformation.skills", [...currentSkills, skill]);
     }
   };
 
   // Remove skill from selected list
   const removeSkill = (skill: string) => {
     formik.setFieldValue(
-      "skills",
-      formik.values.skills.filter((s) => s !== skill)
+      "skillsInformation.skills",
+      currentSkills.filter((s: string) => s !== skill)
     );
   };
 
   // Add custom skill
   const addCustomSkill = () => {
     const trimmedSkill = extraSkill.trim();
-    if (trimmedSkill && !formik.values.skills.includes(trimmedSkill)) {
-      formik.setFieldValue("skills", [...formik.values.skills, trimmedSkill]);
+    if (trimmedSkill && !currentSkills.includes(trimmedSkill)) {
+      formik.setFieldValue("skillsInformation.skills", [...currentSkills, trimmedSkill]);
       setExtraSkill("");
     }
   };
@@ -62,13 +59,13 @@ export const Skills = ({ formik }: SkillsProps) => {
   return (
     <div className="w-full flex flex-col gap-6">
       {/* SELECTED SKILLS */}
-      {formik.values.skills.length > 0 && (
+      {currentSkills.length > 0 && (
         <div className="bg-gray-100 rounded-lg p-4">
           <h3 className="text-sm font-medium text-gray-700 mb-3">
             Selected Skills
           </h3>
           <div className="flex flex-wrap gap-2">
-            {formik.values.skills.map((item, index) => (
+            {currentSkills.map((item: string, index: number) => (
               <div
                 key={index}
                 className="flex items-center gap-2 bg-black text-white px-3 py-1.5 rounded-md text-sm font-medium"
@@ -93,8 +90,8 @@ export const Skills = ({ formik }: SkillsProps) => {
           Popular Skills
         </h3>
         <div className="flex flex-wrap gap-2">
-          {availableSkills.map((item: string, index) => {
-            const isSelected = formik.values.skills.includes(item);
+          {availableSkills.map((item: string, index: number) => {
+            const isSelected = currentSkills.includes(item);
             return (
               <Button
                 key={index}
@@ -137,10 +134,10 @@ export const Skills = ({ formik }: SkillsProps) => {
           </Button>
         </div>
         <SelectField
-          name="country"
+          name="skillsInformation.specialization"
           label="Preferred Specialization"
           placeholder="Select specialization"
-          options={countryOptions}
+          options={specializationOptions}
           formik={formik}
         />
       </div>

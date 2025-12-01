@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-
 import { useStepper } from "@/store/stepper";
 import { motion } from "framer-motion";
 import { Index } from "@/modules/tesa-application";
@@ -20,8 +19,14 @@ import {
   skillsSchema,
   workExperienceSchema,
 } from "@/utils/schema/tesaSchema";
+import PaymentOptions from "@/modules/tesa-application/payment-option";
+import { useCreateProfileMutation } from "@/service/profile";
+import { tesaApplicationRequest } from "@/models/request/profileRequest";
+import { useProfileStore } from "@/store/profile";
 
 export const TesaApplicationForm = () => {
+  const [createProfile,{isLoading}] = useCreateProfileMutation()
+   const {setFirstName,setLastName}=useProfileStore()
   const { step, setStep } = useStepper();
 
   const stepIndicators = [
@@ -33,6 +38,8 @@ export const TesaApplicationForm = () => {
     { id: 2, title: "Academic Background", validation: academicSchema },
     { id: 3, title: "Work Experience", validation: workExperienceSchema },
     { id: 4, title: "Skills & Certification", validation: skillsSchema },
+    { id: 5, title: "Payment",},
+
   ];
 
   const getCurrentValidation = () => {
@@ -40,38 +47,93 @@ export const TesaApplicationForm = () => {
     return stepIndicators[step - 1]?.validation || null;
   };
 
-  const formik = useFormik({
-    initialValues: {
-      personalInfo: {
-        gender: "",
-        email: "",
-        phoneNumber: "",
-        firstName: "",
-        lastName: "",
-        middleName: "",
-        country: "",
-        age: "",
-      },
-      academicInfo: {
-        fieldOfStudy: "",
-        university: "",
-        degree: "",
-        gpa: "",
-        graduationYear: "",
-        nysc: "",
-      },
-      workExperience: {
-        companyName: "",
-        jobRole: "",
-        employed: "",
-        yearsOfExperience: "",
-      },
-      skills: [] as string[],
+// Update the initial values structure
+const formik = useFormik({
+  initialValues: {
+    personalInformation: {
+      firstName: "",
+      lastName: "",
+      middleName: "",
+      address: "",
+      age: "",
+      gender: "",
+      email: "",
+      phoneNumber: "",
+      country: "",
     },
-    onSubmit: (values) => console.log("Form submitted:", values),
-    enableReinitialize: true,
-    validationSchema: getCurrentValidation(),
-  });
+    academicInformation: {
+      fieldOfStudy: "",
+      university: "",
+      degree: "",
+      gpa: "",
+      graduationYear: "",
+      nysc: "",
+      otherUniversity: "",
+      otherDegree: "",
+      otherFieldOfStudy: "",
+    },
+    workExperience: {
+      companyName: "",
+      jobRole: "",
+      yearsOfExperience: "",
+      otherJobRole: "",
+    },
+    skillsInformation: {
+      specialization: "",
+      skills: [],
+    },
+  },
+  onSubmit: async (values) => {
+    console.log(values, 'values')
+    try {
+      const payload: tesaApplicationRequest = {
+        personalInformation: {
+          firstName: values.personalInformation.firstName,
+          lastName: values.personalInformation.lastName,
+          middleName: values.personalInformation.middleName,
+          address: values.personalInformation.address,
+          age: values.personalInformation.age,
+          gender: values.personalInformation.gender as "Male" | "Female",
+          email: values.personalInformation.email,
+          phoneNumber: values.personalInformation.phoneNumber,
+          country: values.personalInformation.country,
+        },
+        academicInformation: {
+          university: values.academicInformation.university,
+          otherUniversity: values.academicInformation.otherUniversity || null,
+          degree: values.academicInformation.degree,
+          otherDegree: values.academicInformation.otherDegree || null,
+          graduationYear: values.academicInformation.graduationYear,
+          fieldOfStudy: values.academicInformation.fieldOfStudy,
+          otherFieldOfStudy: values.academicInformation.otherFieldOfStudy || null,
+          gpa: values.academicInformation.gpa,
+          nysc: values.academicInformation.nysc as "Yes" | "No",
+        },
+        workExperience: {
+          companyName: values.workExperience.companyName,
+          jobRole: values.workExperience.jobRole,
+          otherJobRole: values.workExperience.otherJobRole || null,
+          yearsOfExperience: values.workExperience.yearsOfExperience,
+        },
+        skillsInformation: {
+          specialization: values.skillsInformation.specialization,
+          skills: values.skillsInformation.skills,
+        },
+      };
+      console.log(payload, 'payload')
+      const res = await createProfile(payload).unwrap();
+      await setFirstName(values.personalInformation.firstName);
+      await setLastName(values.personalInformation.lastName);
+      setStep(5);
+      toast.success(res?.message);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to submit application. Please try again.");
+    }
+  },
+  enableReinitialize: true,
+  validationSchema: getCurrentValidation(),
+});
 
   const displayValidationErrors = (errors: any) => {
     const firstError = Object.values(errors)[0];
@@ -82,26 +144,37 @@ export const TesaApplicationForm = () => {
     // Only touch fields relevant to current step
     const stepFieldMap: Record<number, string[]> = {
       1: [
-        "firstName",
-        "lastName",
-        "middleName",
-        "gender",
-        "email",
-        "phoneNumber",
-        "age",
-        "country",
-        "address",
+        "personalInformation.firstName",
+        "personalInformation.lastName",
+        "personalInformation.middleName",
+        "personalInformation.gender",
+        "personalInformation.email",
+        "personalInformation.phoneNumber",
+        "personalInformation.age",
+        "personalInformation.country",
+        "personalInformation.address",
       ],
       2: [
-        "fieldOfStudy",
-        "university",
-        "degree",
-        "gpa",
-        "graduationYear",
-        "nyscs",
+        "academicInformation.fieldOfStudy",
+        "academicInformation.university",
+        "academicInformation.degree",
+        "academicInformation.gpa",
+        "academicInformation.graduationYear",
+        "academicInformation.nysc",
+        "academicInformation.otherUniversity",
+        "academicInformation.otherDegree",
+        "academicInformation.otherFieldOfStudy",
       ],
-      3: ["companyName", "jobRole", "employed", "yearsOfExperience"],
-      4: ["skills"],
+      3: [
+        "workExperience.companyName",
+        "workExperience.jobRole",
+        "workExperience.yearsOfExperience",
+        "workExperience.otherJobRole",
+      ],
+      4: [
+        "skillsInformation.skills",
+        "skillsInformation.specialization",
+      ],
     };
 
     const fieldsToTouch = stepFieldMap[step] || [];
@@ -117,7 +190,9 @@ export const TesaApplicationForm = () => {
     touchAllFields();
     const errors = await formik.validateForm();
     if (Object.keys(errors).length > 0) return displayValidationErrors(errors);
-    if (step < 4) setStep(step + 1);
+    
+    // Don't auto-advance to step 5, let them click "Next" to get there
+    if (step < 4) setStep(step + 1);  // Changed from 5 to 4
   };
 
   const handlePrevious = () => step > 1 && setStep(step - 1);
@@ -201,18 +276,19 @@ export const TesaApplicationForm = () => {
             </motion.div>
           </StepperLayout>
         )}
-
-        {step === 4 && (
-          <div className="flex flex-col w-full h-screen">
+ {step === 4 && (
+            
+          
+            <div className="flex flex-col w-full h-screen">
             <div className="flex-1 overflow-y-auto">
-              <div className="w-full max-w-5xl mx-auto px-6 lg:px-12 py-8 lg:py-12 pb-32">
+              <div className="w-full max-w-3xl mx-auto px-6 lg:px-10 py-8 mt-10 lg:pt-10 lg:mb-32 pb-32">
                 <div className="mb-8 lg:mb-12">
                   <h1 className="font-bold text-2xl lg:text-3xl text-gray-900 mb-2">
-                    Skills & Certifications
+                  Skills & Certifications
                   </h1>
                   <p className="text-gray-600 text-sm lg:text-base">
-                    We&apos;d love to know more about your skillsets &
-                    certifications
+                  We&apos;d love to know more about your skillsets &
+                  certifications
                   </p>
                 </div>
 
@@ -221,7 +297,54 @@ export const TesaApplicationForm = () => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, ease: "easeOut" }}
                 >
-                  <Skills formik={formik as any} />
+                <Skills formik={formik as any} />
+                </motion.div>
+              </div>
+            </div>
+
+            {/* CUSTOM FOOTER FOR FINAL STEP */}
+            <div className="fixed bottom-0 left-0 lg:left-[30%] right-0 bg-white border-t border-gray-200 ">
+              <div className="w-full mx-auto px-6 lg:px-12 py-5">
+                <div className="flex justify-between items-center">
+                  <Button
+                    onClick={handlePrevious}
+                    variant={"secondary"}
+                    prefixIcon={<ArrowLeft />}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    onClick={()=>formik.handleSubmit()}
+                    loading={isLoading}
+                    disabled={!isCurrentStepValid()}
+                  >
+                    Submit Application
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+          )}
+        {step === 5 && (
+          
+          <div className="flex flex-col w-full h-screen">
+            <div className="flex-1 overflow-y-auto">
+              <div className="w-full max-w-3xl mx-auto px-6 lg:px-10 py-8 mt-10 lg:pt-10 lg:mb-32 pb-32">
+                <div className="mb-8 lg:mb-12">
+                  <h1 className="font-bold text-2xl lg:text-3xl text-gray-900 mb-2">
+                    Payment
+                  </h1>
+                  <p className="text-gray-600 text-sm lg:text-base">
+                    We&apos;d love to know more about your payment details
+                  </p>
+                </div>
+
+                <motion.div
+                  initial={{ opacity: 0, x: -40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                >
+                  <PaymentOptions />
                 </motion.div>
               </div>
             </div>

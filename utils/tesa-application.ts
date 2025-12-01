@@ -470,7 +470,8 @@ export const availableSkills = [
     { label: "Petroleum Engineer", value: "petroleum_engineer" },
     { label: "Teacher", value: "teacher" },
     { label: "Lecturer", value: "lecturer" },
-    { label: "Entrepreneur", value: "entrepreneur" }
+    { label: "Entrepreneur", value: "entrepreneur" },
+    { label: "Others", value: "Others" },
   ]
 
   

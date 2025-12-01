@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import LocalFont from "next/font/local";
+import  { ProviderWrapper } from "@/components/provider/provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -69,11 +70,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistLocal.variable}`}>
-      <body
-        className={`${geistLocal.variable} ${geistMono.variable} antialiased`}
-      >
+    <body className={`${geistLocal.variable} } antialiased`}>
+      <ProviderWrapper>
         {children}
-      </body>
-    </html>
+      </ProviderWrapper>
+    </body>
+  </html>
   );
 }

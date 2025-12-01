@@ -49,7 +49,7 @@ export const StepIndicator = ({
                     {index < steps.length - 1 && (
                       <div
                         className={`
-                          w-0.5 h-6 mt-2 transition-colors duration-200
+                          w-[1px] h-4 mt-2 transition-colors duration-200
                           ${isCompleted(s.id) ? "bg-[#12B981]" : "bg-gray-300"}
                         `}
                       />

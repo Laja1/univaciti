@@ -1,3 +1,4 @@
+"use client"
 import { Button } from "@/components/ui/button";
 import { QucoonLogo } from "@/public/svgs/qucoon-logo";
 import { useStepper } from "@/store/stepper";
