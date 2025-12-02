@@ -493,15 +493,13 @@ export const availableSkills = [
   
 
   export const specializationOptions = [
-    { label: "AI & Machine Learning", value: "Ai" },
+    { label: "AI & Machine Learning", value: "AI" },
     { label: "Data Science & Analytics", value: "Data Analytics" },
     { label: "Cloud Engineering", value: "Cloud Engineering" },
-    { label: "Software Engineering", value: "software_engineering" },
     { label: "React", value: "React" },
     { label: "DevOps & SRE", value: "DevOps" },
-    { label: "Cloud Architecture", value: "cloud_architecture" },
     { label: "Java", value: "Java" },
-    { label: "Quality Assurance & Testing", value: "quality_assurance_testing" },
-    { label: "Project Management", value: "project_management" },
+    { label: "Quality Assurance & Testing", value: "QA" },
+    { label: "Project Management", value: "Project Management" },
   ];
   

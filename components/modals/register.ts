@@ -1,15 +1,15 @@
 import NiceModal from "@ebay/nice-modal-react";
 import { PaymentModal } from "./paymentModal";
-import { SuccessModal } from "./success-modal";
+import { ConfirmModal } from "./success-modal";
 
 export const ModalConstant = {
     PaymentModal:'PaymentModal',
-    SuccessModal:'SuccessModal'
+    ConfirmModal:'ConfirmModal'
   };
 
 const registerSheets = {
     [ModalConstant.PaymentModal]:PaymentModal,
-    [ModalConstant.SuccessModal]:SuccessModal
+    [ModalConstant.ConfirmModal]:ConfirmModal
 }
 
 Object.entries(registerSheets).forEach(([sheetId, SheetComponent]) => {

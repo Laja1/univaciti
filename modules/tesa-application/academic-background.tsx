@@ -35,7 +35,7 @@ export const AcademicBackground = ({
           options={universityOptions}
           formik={formik}
         />
-       {formik.values.university === "Others" && (
+       {formik.values.academicInformation.university === "Others" && (
         <Input
           name="academicInformation.otherUniversity"
           label="Your institution not on the list? Add manually"
@@ -51,7 +51,7 @@ export const AcademicBackground = ({
           options={degreeTypes}
           formik={formik}
         />
-        {formik.values.degree === "Others" && (
+        {formik.values.academicInformation.degree === "Others" && (
           <Input
             name="academicInformation.otherDegree"
             label="Your degree not on the list? Add manually"
@@ -74,7 +74,7 @@ export const AcademicBackground = ({
           options={fieldsOptions}
           formik={formik}
         />
-        {formik.values.fieldOfStudy === "Others" && (
+        {formik.values.academicInformation.fieldOfStudy === "Others" && (
           <Input
             name="academicInformation.otherFieldOfStudy"
             label="Your field of study not on the list? Add manually"
@@ -94,7 +94,7 @@ export const AcademicBackground = ({
           label="Have you completed NYSC?"
           value={formik.values.academicInformation.nysc}
           options={["Yes", "No"]}
-          onChange={(val) => formik.setFieldValue("nysc", val)}
+          onChange={(val) => formik.setFieldValue("academicInformation.nysc", val)}
         />
       </div>
     </div>

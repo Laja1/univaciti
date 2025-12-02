@@ -27,11 +27,10 @@ export interface tesaApplicationRequest {
     };
   
     workExperience: {
+      workExperience: "Yes" | "No";
       companyName: string;
-  
       jobRole: string;
       otherJobRole?: string | null;
-  
       yearsOfExperience: string;
     };
   

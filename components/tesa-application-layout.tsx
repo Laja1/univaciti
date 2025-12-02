@@ -23,10 +23,12 @@ import PaymentOptions from "@/modules/tesa-application/payment-option";
 import { useCreateProfileMutation } from "@/service/profile";
 import { tesaApplicationRequest } from "@/models/request/profileRequest";
 import { useProfileStore } from "@/store/profile";
+import { ErrorHandler } from "@/service/httpClient/errorHandler";
+import { QucoonLogo } from "@/public/svgs/qucoon-logo";
 
 export const TesaApplicationForm = () => {
   const [createProfile,{isLoading}] = useCreateProfileMutation()
-   const {setFirstName,setLastName}=useProfileStore()
+   const {setFirstName,setEmail,setLastName,setId,firstName,lastName,email}=useProfileStore()
   const { step, setStep } = useStepper();
 
   const stepIndicators = [
@@ -73,6 +75,7 @@ const formik = useFormik({
       otherFieldOfStudy: "",
     },
     workExperience: {
+      workExperience:"",
       companyName: "",
       jobRole: "",
       yearsOfExperience: "",
@@ -84,7 +87,6 @@ const formik = useFormik({
     },
   },
   onSubmit: async (values) => {
-    console.log(values, 'values')
     try {
       const payload: tesaApplicationRequest = {
         personalInformation: {
@@ -110,6 +112,7 @@ const formik = useFormik({
           nysc: values.academicInformation.nysc as "Yes" | "No",
         },
         workExperience: {
+          workExperience: values.workExperience.workExperience as "Yes" | "No",
           companyName: values.workExperience.companyName,
           jobRole: values.workExperience.jobRole,
           otherJobRole: values.workExperience.otherJobRole || null,
@@ -123,12 +126,15 @@ const formik = useFormik({
       console.log(payload, 'payload')
       const res = await createProfile(payload).unwrap();
       await setFirstName(values.personalInformation.firstName);
+      await setEmail(values.personalInformation.email);
       await setLastName(values.personalInformation.lastName);
+      await setId(res?.data?.id);
+
       setStep(5);
       toast.success(res?.message);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to submit application. Please try again.");
+      toast.error(ErrorHandler.extractMessage(error),{position:'top-right'});
     }
   },
   enableReinitialize: true,
@@ -150,6 +156,9 @@ const formik = useFormik({
         "personalInformation.gender",
         "personalInformation.email",
         "personalInformation.phoneNumber",
+        "personalInformation.otherUniversity",
+        "personalInformation.otherDegree",
+        "personalInformation.otherFieldOfStudy",
         "personalInformation.age",
         "personalInformation.country",
         "personalInformation.address",
@@ -165,16 +174,9 @@ const formik = useFormik({
         "academicInformation.otherDegree",
         "academicInformation.otherFieldOfStudy",
       ],
-      3: [
-        "workExperience.companyName",
-        "workExperience.jobRole",
-        "workExperience.yearsOfExperience",
-        "workExperience.otherJobRole",
-      ],
-      4: [
-        "skillsInformation.skills",
-        "skillsInformation.specialization",
-      ],
+      3: ["workExperience.companyName", "workExperience.jobRole", "workExperience.workExperience", "workExperience.yearsOfExperience", "workExperience.otherJobRole"],
+      4: ["skillsInformation.skills", "skillsInformation.specialization"],
+
     };
 
     const fieldsToTouch = stepFieldMap[step] || [];
@@ -211,7 +213,6 @@ const formik = useFormik({
     return !hasErrors && formik.isValid;
   };
 
-  console.log(formik.errors);
 
   return (
     <div className="flex w-full h-screen overflow-hidden">
@@ -329,16 +330,18 @@ const formik = useFormik({
           
           <div className="flex flex-col w-full h-screen">
             <div className="flex-1 overflow-y-auto">
-              <div className="w-full max-w-3xl mx-auto px-6 lg:px-10 py-8 mt-10 lg:pt-10 lg:mb-32 pb-32">
-                <div className="mb-8 lg:mb-12">
-                  <h1 className="font-bold text-2xl lg:text-3xl text-gray-900 mb-2">
-                    Payment
-                  </h1>
-                  <p className="text-gray-600 text-sm lg:text-base">
-                    We&apos;d love to know more about your payment details
-                  </p>
-                </div>
-
+              <div className="w-full max-w-3xl mx-auto px-6 lg:px-10 py-8 mt-10 lg:pt-10 lg:mb-20 pb-32">
+              <div className="flex justify-between items-start gap-6 mb-8 lg:mb-12">
+            <div className="flex-1">
+              <h1 className="font-bold text-2xl lg:text-3xl text-gray-900 mb-2">
+              {firstName} {lastName} — Payment Information
+              </h1>
+              <p className="text-gray-600 text-sm lg:text-base"> We just need a few details to process your payment.</p>
+            </div>
+            <div className="flex-shrink-0">
+              <QucoonLogo />
+            </div>
+          </div>
                 <motion.div
                   initial={{ opacity: 0, x: -40 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -349,26 +352,7 @@ const formik = useFormik({
               </div>
             </div>
 
-            {/* CUSTOM FOOTER FOR FINAL STEP */}
-            <div className="fixed bottom-0 left-0 lg:left-[30%] right-0 bg-white border-t border-gray-200 ">
-              <div className="w-full mx-auto px-6 lg:px-12 py-5">
-                <div className="flex justify-between items-center">
-                  <Button
-                    onClick={handlePrevious}
-                    variant={"secondary"}
-                    prefixIcon={<ArrowLeft />}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    onClick={() => formik.handleSubmit()}
-                    disabled={!isCurrentStepValid()}
-                  >
-                    Submit Application
-                  </Button>
-                </div>
-              </div>
-            </div>
+          
           </div>
         )}
       </div>

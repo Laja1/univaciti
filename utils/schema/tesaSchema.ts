@@ -81,36 +81,42 @@ export const academicSchema = object({
 
 export const workExperienceSchema = object({
   workExperience: object({
-    jobRole: string()
-      .oneOf(
-        [...jobRolesOptions.map((item) => item.value), ""],
-        "Please select a valid job role"
-      )
-      .required("Job role is required"),
-    companyName: string().when("jobRole", {
-      is: (value: string) => value && value !== "",
-      then: (schema) => defaultValidation("Company name"),
+    workExperience: string()
+      .oneOf(["Yes", "No"])
+      .required("Please select an option"),
+
+    companyName: string().when("workExperience", {
+      is: (val: string) => val === "Yes",
+      then: (schema) => schema.min(2, "Company name is too short").required("Company name is required"),
       otherwise: (schema) => schema.notRequired().nullable(),
     }),
-    yearsOfExperience: string().when("jobRole", {
-      is: (value: string) => value && value !== "",
+
+    jobRole: string().when("workExperience", {
+      is: (val: string) => val === "Yes",
       then: (schema) =>
         schema
-          .oneOf(
-            experienceOptions.map((item) => item.value),
-            "Please select valid years of experience"
-          )
+          .oneOf(jobRolesOptions.map((item) => item.value))
+          .required("Job role is required"),
+      otherwise: (schema) => schema.notRequired().nullable(),
+    }),
+
+    yearsOfExperience: string().when("workExperience", {
+      is: (val: string) => val === "Yes",
+      then: (schema) =>
+        schema
+          .oneOf(experienceOptions.map((item) => item.value))
           .required("Years of experience is required"),
       otherwise: (schema) => schema.notRequired().nullable(),
     }),
+
     otherJobRole: string().when("jobRole", {
       is: "Others",
-      then: (schema) =>
-        schema.required("Please enter your job role").min(2, "Job role is too short"),
+      then: (schema) => schema.required("Please enter your job role"),
       otherwise: (schema) => schema.notRequired().nullable(),
     }),
-  })
+  }),
 });
+
 
 export const skillsSchema = object({
   skillsInformation: object({

@@ -10,16 +10,41 @@ import {
   
   import { ModalConstant } from "./register";
   import { useState } from "react";
-  
-  export const PaymentModal = create(() => {
+import { usePaymentStatusMutation } from "@/service/payment";
+import { useProfileStore } from "@/store/profile";
+import { toast } from "sonner";
+import { ErrorHandler } from "@/service/httpClient/errorHandler";
+  type paymentType = {
+    accountName:string
+    accountNumber:string
+    amount:string
+    reference:string
+  }
+
+  export const PaymentModal = create<paymentType>(() => {
     const modal = useModal(ModalConstant.PaymentModal);
-    const row = modal.args;
-  
+    const {email} = useProfileStore()
+    const { accountName, accountNumber, amount,reference } = modal.args as paymentType;
+    const [paymentStatus,{isLoading}] = usePaymentStatusMutation()
     const [confirmed, setConfirmed] = useState(false);
-  
+    const handleCheckStatus = async()=>{
+    try{
+      const res = await paymentStatus({email:email,reference:reference}).unwrap()
+      toast.success(res?.message)
+    
+     NiceModal.show(ModalConstant.ConfirmModal,{
+      status:res?.data?.status,
+      email:email,
+      reference:reference
+    })      
+    }
+    catch(error){
+      toast.error(ErrorHandler.extractMessage(error))
+    }
+    }
     return (
-      <Dialog open={modal.visible}>
-        <DialogContent className="sm:max-w-[420px] rounded-xl">
+      <Dialog open={modal.visible} >
+        <DialogContent showCloseButton={false} className="sm:max-w-[420px] rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold">
               Payment Instructions
@@ -30,16 +55,13 @@ import {
           </DialogHeader>
   
           <div className="space-y-4 mt-4">
-            {/* PAYMENT INFO BOX */}
             <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
-              <Item label="Account Name" value="John Doe" />
-              <Item label="Account Number" value="1234567890" />
-              <Item label="Bank" value="Bank of America" />
-              <Item label="Amount" value="₦120,000" />
+              <Item label="Account Name" value={accountName} />
+              <Item label="Account Number" value={accountNumber} />
+              <Item label="Amount" value={`₦${amount}`} />
               <Item label="Payment Method" value="Bank Transfer" />
             </div>
   
-            {/* TOGGLE BUTTON */}
             <div
               onClick={() => setConfirmed(!confirmed)}
               className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition
@@ -60,11 +82,11 @@ import {
   
             <Button
               disabled={!confirmed}
+              loading={isLoading}
               className="bg-primary text-white disabled:opacity-40"
               onClick={() => {
-                // handle submit action here
                 modal.hide();
-                NiceModal.show(ModalConstant.SuccessModal);
+               handleCheckStatus()
               }}
             >
               Confirm Payment
@@ -74,6 +96,7 @@ import {
       </Dialog>
     );
   });
+  
   
   // SMALL SUB-COMPONENT FOR CLEAN DISPLAY
   const Item = ({ label, value }: { label: string; value: string }) => (

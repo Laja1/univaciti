@@ -13,22 +13,22 @@ export const WorkExperience = ({ formik }: { formik: FormikProps<any> }) => {
     <div className="w-full flex flex-col gap-6">
       <SegmentedControl
         label="Are you currently employed?"
-        value={formik.values.workExperience}
+        value={formik.values.workExperience.workExperience}
         options={["Yes", "No"]}
-        onChange={(val) => formik.setFieldValue("workExperience", val)}
+        onChange={(val) => formik.setFieldValue("workExperience.workExperience", val)}
       />
 
-      {formik.values.workExperience === "Yes" && (
+      {formik.values.workExperience.workExperience === "Yes" && (
         <div className="flex flex-col gap-3">
           <Input
-            name="companyName"
+            name="workExperience.companyName"
             label="Company name"
             placeholder="Enter company name"
             prefixIcon={<User size={16} />}
             formik={formik}
           />
           <SelectField
-            name="jobRole"
+            name="workExperience.jobRole"
             label="Job role"
             placeholder="Select job role"
             options={jobRolesOptions}
@@ -36,7 +36,7 @@ export const WorkExperience = ({ formik }: { formik: FormikProps<any> }) => {
           />
           {formik.values.jobRole === "Others" && (
             <Input
-              name="otherJobRole"
+              name="workExperience.otherJobRole"
               label="Other job role"
               placeholder="Enter other job role"
               prefixIcon={<User size={16} />}
@@ -44,7 +44,7 @@ export const WorkExperience = ({ formik }: { formik: FormikProps<any> }) => {
             />
           )}
           <SelectField
-            name="yearsOfExperience"
+            name="workExperience.yearsOfExperience"
             label="Years of experience"
             placeholder="Select years of experience"
             options={experienceOptions}

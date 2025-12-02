@@ -12,6 +12,7 @@ interface PaymentCardProps {
   inactive?: boolean;
   buttonLabel: string;
   highlighted?: boolean;
+  isLoading?:boolean
   popular?: boolean; // optional: adds "Most Popular" badge
   buttonAction?: () => void;
 }
@@ -22,6 +23,7 @@ export const PaymentCard: FC<PaymentCardProps> = ({
   description,
   details,
   inactive = false,
+  isLoading,
   buttonLabel,
   popular = false,
   buttonAction,
@@ -109,6 +111,7 @@ export const PaymentCard: FC<PaymentCardProps> = ({
           size="lg"
           onClick={inactive ? undefined : buttonAction}
           disabled={inactive}
+          loading={isLoading}
         >
           {buttonLabel}
         </Button>
