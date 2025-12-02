@@ -43,41 +43,40 @@ export default function PaymentOptions() {
   return (
     <div className="w-full flex flex-wrap justify-center gap-6 py-10 ">
       <PaymentCard
-        title="Pay Now"
+        title="Full Payment"
         image={svgsLinks.looper1}
         price="₦1,000,000"
-        description="One-time full payment."
+        showMonth={false}
+        description="One-time payment."
         details={[
           "Instant activation",
           "No extra fees",
           "Full access immediately",
         ]}
-        buttonLabel="Pay Now"
         isLoading={loadingPlan === "pay-now"}
         buttonAction={() => handlePayNow("100", "pay-now")}
       />
 
       <PaymentCard
-        title="2-Month Installment"
-        price="₦500,000 × 2 months"
+        title="Pay In Installment"
+        price="₦350,000"
+        showMonth={true}
         image={svgsLinks.looper2}
-
-        description="Split your payment across two months."
+        description="Split your payment across three months."
         details={[
           "50% upfront payment",
           "Remaining 50% next month",
           "Access after first payment",
         ]}
-        buttonLabel="Choose 2-Month Plan"
         isLoading={loadingPlan === "2-month"}
         buttonAction={() => handlePayNow("500", "2-month")}
       />
 
       <PaymentCard
         title="12-Month Pay Later"
-        price="₦83,000 / month"
+        price="₦83,000"
         image={svgsLinks.looper3}
-
+        showMonth={true}
         description="Spread payments across 1 year."
         details={[
           "Lowest monthly cost",
@@ -85,7 +84,6 @@ export default function PaymentOptions() {
           "Access after first payment",
         ]}
         highlighted
-        buttonLabel="Choose 12-Month Plan"
         isLoading={loadingPlan === "12-month"}
         buttonAction={() => handlePayNow("83000", "12-month")}
       />
@@ -93,11 +91,11 @@ export default function PaymentOptions() {
       <PaymentCard
         title="Loan Option"
         image={svgsLinks.looper4}
+        showMonth={false}
         price="Flexible"
         inactive
         description="Finance through partner lenders."
         details={["Coming soon"]}
-        buttonLabel="Apply for Loan"
       />
     </div>
   );
