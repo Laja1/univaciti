@@ -18,6 +18,12 @@ export const svgsLinks = {
     world:'/svgs/world.svg',
     brain:'/svgs/brain.svg',
     asset:'/svgs/logo.svg',
+    looper1:'/svgs/looper1.svg',
+    looper2:'/svgs/looper2.svg',
+
+    looper3:'/svgs/looper3.svg',
+    looper4:'/svgs/looper4.svg',
+
     citibank:'/svgs/citibank.svg',
     bird:'/svgs/bird.svg',
     chess:'/svgs/chess.svg',

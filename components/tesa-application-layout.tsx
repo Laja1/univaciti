@@ -11,7 +11,7 @@ import { WorkExperience } from "@/modules/tesa-application/work-experience";
 import { Skills } from "@/modules/tesa-application/skills";
 import { useFormik } from "formik";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Info } from "lucide-react";
 import { toast } from "sonner";
 import {
   academicSchema,
@@ -330,18 +330,26 @@ const formik = useFormik({
           
           <div className="flex flex-col w-full h-screen">
             <div className="flex-1 overflow-y-auto">
-              <div className="w-full max-w-3xl mx-auto px-6 lg:px-10 py-8 mt-10 lg:pt-10 lg:mb-20 pb-32">
-              <div className="flex justify-between items-start gap-6 mb-8 lg:mb-12">
+              <div className="w-full max-w-3xl mx-auto px-6 lg:px-10  mt-10 lg:pt-10 lg:mb-5 pb-12">
+              <div className="flex justify-between items-start gap-6 mb-6">
             <div className="flex-1">
               <h1 className="font-bold text-2xl lg:text-3xl text-gray-900 mb-2">
-              {firstName} {lastName} — Payment Information
+              Choose Payment Plan
               </h1>
-              <p className="text-gray-600 text-sm lg:text-base"> We just need a few details to process your payment.</p>
+              <p className="text-gray-600 text-sm lg:text-base"> You're almost done! Just a few details left to finish your application.</p>
             </div>
             <div className="flex-shrink-0">
               <QucoonLogo />
             </div>
+           
           </div>
+          <div className="w-full bg-blue-50 border flex gap-2 border-dashed border-blue-600 text-blue-800 px-4 py-3 rounded-lg">
+            <Info />
+  <p className="text-sm font-medium">
+    Payment is only required after your confirmation. You’ll be asked to pay once all verification tests are completed.
+  </p>
+</div>
+<div className="w-full ">
                 <motion.div
                   initial={{ opacity: 0, x: -40 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -352,7 +360,7 @@ const formik = useFormik({
               </div>
             </div>
 
-          
+            </div>
           </div>
         )}
       </div>

@@ -3,16 +3,20 @@ import { FC } from "react";
 import { Button } from "../ui/button";
 import { Check } from "lucide-react"; // optional: for nice checkmarks
 import clsx from "clsx";
+import Image from "next/image";
+import { svgsLinks } from "@/public/assetLinks";
 
 interface PaymentCardProps {
   title: string;
   price: string;
   description: string;
   details: string[];
+  image:any
   inactive?: boolean;
   buttonLabel: string;
   highlighted?: boolean;
   isLoading?:boolean
+  className?:string
   popular?: boolean; // optional: adds "Most Popular" badge
   buttonAction?: () => void;
 }
@@ -24,21 +28,25 @@ export const PaymentCard: FC<PaymentCardProps> = ({
   details,
   inactive = false,
   isLoading,
+  image,
   buttonLabel,
+  className,
   popular = false,
   buttonAction,
 }) => {
   return (
     <div
       className={clsx(
-        "relative w-full max-w-xs border-neutral-800 overflow-hidden rounded-2xl border transition-all duration-300",
+        "relative w-full max-w-xs  overflow-hidden rounded-xl  transition-all duration-300",
         "bg-[#0f0f0f] backdrop-blur-xl",
+       
         {
           "cursor-not-allowed opacity-60 grayscale": inactive,
           
           "hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1": !inactive,
         
-        }
+        },
+        `${className}`,
       )}
     >
       {/* Popular Badge */}
@@ -73,9 +81,10 @@ export const PaymentCard: FC<PaymentCardProps> = ({
         <p className="text-neutral-400 text-sm leading-relaxed mb-8">
           {description}
         </p>
-
-        {/* Features List */}
-        <ul className="space-y-4 mb-10">
+<div className="absolute right-0 opacity-50 top-0">
+<Image src={image} width={200} height={200} alt="laja"/>
+</div>
+          <ul className="space-y-4 mb-10">
           {details.map((item, idx) => (
             <li key={idx} className="flex items-start gap-3">
               <div className="mt-0.5">
@@ -113,7 +122,7 @@ export const PaymentCard: FC<PaymentCardProps> = ({
           disabled={inactive}
           loading={isLoading}
         >
-          {buttonLabel}
+          Choose Plan
         </Button>
       </div>
     </div>

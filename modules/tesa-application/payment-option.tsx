@@ -7,6 +7,7 @@ import { useProfileStore } from "@/store/profile";
 import { toast } from "sonner";
 import { ErrorHandler } from "@/service/httpClient/errorHandler";
 import { useState } from "react";
+import { svgsLinks } from "@/public/assetLinks";
 
 export default function PaymentOptions() {
   const [payNow] = usePayNowMutation();
@@ -43,6 +44,7 @@ export default function PaymentOptions() {
     <div className="w-full flex flex-wrap justify-center gap-6 py-10 ">
       <PaymentCard
         title="Pay Now"
+        image={svgsLinks.looper1}
         price="₦1,000,000"
         description="One-time full payment."
         details={[
@@ -58,6 +60,8 @@ export default function PaymentOptions() {
       <PaymentCard
         title="2-Month Installment"
         price="₦500,000 × 2 months"
+        image={svgsLinks.looper2}
+
         description="Split your payment across two months."
         details={[
           "50% upfront payment",
@@ -72,6 +76,8 @@ export default function PaymentOptions() {
       <PaymentCard
         title="12-Month Pay Later"
         price="₦83,000 / month"
+        image={svgsLinks.looper3}
+
         description="Spread payments across 1 year."
         details={[
           "Lowest monthly cost",
@@ -86,6 +92,7 @@ export default function PaymentOptions() {
 
       <PaymentCard
         title="Loan Option"
+        image={svgsLinks.looper4}
         price="Flexible"
         inactive
         description="Finance through partner lenders."
