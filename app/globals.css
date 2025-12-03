@@ -134,3 +134,27 @@ input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+body,
+html {
+  overflow-x: hidden; /* Prevent horizontal overflow */
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+form {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
