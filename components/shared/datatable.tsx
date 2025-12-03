@@ -40,7 +40,7 @@ import {
 import { IconFilter2 } from "@tabler/icons-react";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 export type HeaderAction = {
   icon: React.ComponentType<{ className?: string }>;
@@ -326,8 +326,23 @@ export function DataTable<T>({
       [columnId]: value,
     }));
   };
-
-  // UPDATED: Export functions now support exporting all fields
+  const convertRawDataToCSV = (data: any[], exportOptions: any) => {
+    if (!data.length) return "";
+  
+    const keys = Object.keys(data[0]);
+  
+    const headers =
+      exportOptions.includeHeaders !== false
+        ? keys.map(formatHeader).join(",")
+        : "";
+  
+    const rows = data.map((row) =>
+      keys.map((key) => `"${row[key] ?? ""}"`).join(",")
+    );
+  
+    return [headers, ...rows].filter(Boolean).join("\n");
+  };
+  
   const exportToCSV = () => {
     const filename =
       exportOptions.filename ||
@@ -339,19 +354,29 @@ export function DataTable<T>({
     
     downloadFile(csvContent, filename, "text/csv");
   };
+  
 
+  const formatHeader = (key: string) => {
+    return key
+      .replace(/_/g, " ") 
+      .replace(/\b\w/g, (c) => c.toUpperCase()); 
+  };
+  
   const exportToExcel = () => {
     const filename =
       exportOptions.filename ||
       `${title || "data"}_${new Date().toISOString().split("T")[0]}.xlsx`;
-
+  
     let worksheetData: any[][] = [];
-
+  
     if (exportOptions.exportAllFields) {
       // Export all fields from raw data
       const keys = getAllDataKeys(data);
+  
       worksheetData = [
-        exportOptions.includeHeaders !== false ? keys : [],
+        exportOptions.includeHeaders !== false
+          ? keys.map((key) => formatHeader(key))
+          : [],
         ...data.map((row) => keys.map((key) => (row as any)[key] ?? "")),
       ].filter((row) => row.length > 0);
     } else {
@@ -359,9 +384,19 @@ export function DataTable<T>({
       const exportableColumns = columns.filter(
         (col) => col.exportable !== false && col.id !== "actions"
       );
+  
       worksheetData = [
         exportOptions.includeHeaders !== false
-          ? exportableColumns.map((col) => col.header)
+          ? exportableColumns.map((col) => {
+              // If header exists, use it; otherwise format accessor key
+              if (col.header) return col.header;
+  
+              if (typeof col.accessorKey === "string") {
+                return formatHeader(col.accessorKey);
+              }
+  
+              return "Column";
+            })
           : [],
         ...data.map((row) =>
           exportableColumns.map((col) => {
@@ -369,91 +404,93 @@ export function DataTable<T>({
               typeof col.accessorKey === "function"
                 ? col.accessorKey
                 : (row: T) => row[col.accessorKey as keyof T];
-            return accessor(row);
+  
+            return accessor(row) ?? "";
           })
         ),
       ].filter((row) => row.length > 0);
     }
-
+  
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, title || "Data");
-
+  
     const excelBuffer = XLSX.write(workbook, {
       bookType: "xlsx",
       type: "array",
     });
+  
     const blob = new Blob([excelBuffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
+  
     downloadFile(
       blob,
       filename,
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     );
   };
-
+  
   const exportToPDF = () => {
     const filename =
       exportOptions.filename ||
       `${title || "data"}_${new Date().toISOString().split("T")[0]}.pdf`;
-
+  
     const doc = new jsPDF();
-
+  
     if (title) {
       doc.setFontSize(16);
       doc.text(title, 14, 20);
     }
-
+  
     let tableHeaders: string[] = [];
     let tableData: string[][] = [];
-
+  
     if (exportOptions.exportAllFields) {
-      // Export all fields from raw data
       const keys = getAllDataKeys(data);
-      tableHeaders = keys;
+      tableHeaders = keys.map((key) => formatHeader(key));
       tableData = data.map((row) =>
         keys.map((key) => String((row as any)[key] ?? ""))
       );
     } else {
-      // Export only columns
       const exportableColumns = columns.filter(
         (col) => col.exportable !== false && col.id !== "actions"
       );
-      tableHeaders = exportableColumns.map((col) => col.header);
+  
+      tableHeaders = exportableColumns.map((col) =>
+        col.header || (typeof col.accessorKey === "string"
+          ? formatHeader(col.accessorKey)
+          : "Column")
+      );
+  
       tableData = data.map((row) =>
         exportableColumns.map((col) => {
           const accessor =
             typeof col.accessorKey === "function"
               ? col.accessorKey
               : (row: T) => row[col.accessorKey as keyof T];
-          const value = accessor(row);
-          return String(value || "");
+          return String(accessor(row) ?? "");
         })
       );
     }
-
-    (doc as any).autoTable({
+  
+    autoTable(doc, {
       head: [tableHeaders],
       body: tableData,
       startY: title ? 30 : 20,
-      styles: {
-        fontSize: 8,
-        cellPadding: 2,
-      },
+      styles: { fontSize: 8, cellPadding: 2 },
       headStyles: {
         fillColor: [66, 66, 66],
         textColor: 255,
         fontSize: 9,
         fontStyle: "bold",
       },
-      alternateRowStyles: {
-        fillColor: [245, 245, 245],
-      },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
     });
-
+  
     doc.save(filename);
   };
+  
 
   const filterColumns = columns.filter(
     (column) => filterableColumns.includes(column.id) && column.filterType

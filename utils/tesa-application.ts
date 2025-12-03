@@ -498,9 +498,6 @@ export const availableSkills = [
     { label: "Data Science & Analytics", value: "Data Analytics" },
     { label: "Cloud Engineering", value: "Cloud Engineering" },
     { label: "React", value: "React" },
-    { label: "DevOps & SRE", value: "DevOps" },
     { label: "Java", value: "Java" },
-    { label: "Quality Assurance & Testing", value: "QA" },
-    { label: "Project Management", value: "Project Management" },
   ];
   
