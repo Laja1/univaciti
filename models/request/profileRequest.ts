@@ -38,5 +38,6 @@ export interface tesaApplicationRequest {
       specialization: string;
       skills: string[];
     };
+    paymentType:'Full Payment' | 'Pay In Installement' | 'One Year Plan'
   }
   

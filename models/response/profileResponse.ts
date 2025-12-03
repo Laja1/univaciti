@@ -19,13 +19,13 @@ export interface tesaApplicationResponse {
     degree: string;
     graduation_year: number;
     field_of_study: string;
-    gpa: number;
+    gpa: number | string;
     nysc_status: string;
     company_name: string;
     job_role: string;
     years_of_experience: number;
     specialization: string;
-  
+    paymentType:'Full Payment' | 'Pay In Installement' | 'One Year Plan'
     // API returns skills as a stringified array → keep as string
     skills: string;
   

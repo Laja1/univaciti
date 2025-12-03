@@ -58,7 +58,7 @@ export type ColumnDef<T> = {
   headerClassName?: string;
   filterOptions?: { label: string; value: string }[];
   headerAction?: HeaderAction;
-  exportable?: boolean; // New property to control if column should be included in exports
+  exportable?: boolean;
 };
 
 export type SortingState = {
@@ -84,6 +84,7 @@ export type ExportOptions = {
   filename?: string;
   includeHeaders?: boolean;
   dateFormat?: string;
+  exportAllFields?: boolean; // NEW: Export all fields from data, not just columns
 };
 
 export type DataTableProps<T> = {
@@ -106,7 +107,7 @@ export type DataTableProps<T> = {
   isLoading?: boolean;
   skeletonRows?: number;
   exportOptions?: ExportOptions;
-  emptyComponent?: React.ReactNode; // New prop for custom empty state
+  emptyComponent?: React.ReactNode;
 };
 
 // Skeleton component
@@ -114,7 +115,45 @@ const Skeleton = ({ className = "" }: { className?: string }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
 );
 
-// Utility function to convert data to CSV
+// NEW: Function to get all keys from data objects
+const getAllDataKeys = <T,>(data: T[]): string[] => {
+  if (data.length === 0) return [];
+  const allKeys = new Set<string>();
+  data.forEach((item) => {
+    Object.keys(item as any).forEach((key) => allKeys.add(key));
+  });
+  return Array.from(allKeys);
+};
+
+// NEW: Convert raw data to CSV (all fields)
+const convertRawDataToCSV = <T,>(
+  data: T[],
+  options: ExportOptions = {}
+): string => {
+  const { includeHeaders = true } = options;
+  
+  if (data.length === 0) return "";
+  
+  const keys = getAllDataKeys(data);
+  const csvRows: string[] = [];
+
+  if (includeHeaders) {
+    const headers = keys.map((key) => `"${key}"`);
+    csvRows.push(headers.join(","));
+  }
+
+  data.forEach((row) => {
+    const values = keys.map((key) => {
+      const value = (row as any)[key];
+      return `"${String(value ?? "").replace(/"/g, '""')}"`;
+    });
+    csvRows.push(values.join(","));
+  });
+
+  return csvRows.join("\n");
+};
+
+// Utility function to convert data to CSV (using columns)
 const convertToCSV = <T,>(
   data: T[],
   columns: ColumnDef<T>[],
@@ -185,7 +224,7 @@ export function DataTable<T>({
   isLoading = false,
   skeletonRows = 10,
   exportOptions = {},
-  emptyComponent, // New prop
+  emptyComponent,
 }: DataTableProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -195,7 +234,6 @@ export function DataTable<T>({
     new Set()
   );
 
-  // Use useEffect to notify parent of filter changes after render
   useEffect(() => {
     if (onFilterChange) {
       onFilterChange(filters);
@@ -289,12 +327,16 @@ export function DataTable<T>({
     }));
   };
 
-  // Export functions
+  // UPDATED: Export functions now support exporting all fields
   const exportToCSV = () => {
     const filename =
       exportOptions.filename ||
       `${title || "data"}_${new Date().toISOString().split("T")[0]}.csv`;
-    const csvContent = convertToCSV(processedData, columns, exportOptions);
+    
+    const csvContent = exportOptions.exportAllFields
+      ? convertRawDataToCSV(data, exportOptions)
+      : convertToCSV(data, columns, exportOptions);
+    
     downloadFile(csvContent, filename, "text/csv");
   };
 
@@ -302,24 +344,36 @@ export function DataTable<T>({
     const filename =
       exportOptions.filename ||
       `${title || "data"}_${new Date().toISOString().split("T")[0]}.xlsx`;
-    const exportableColumns = columns.filter(
-      (col) => col.exportable !== false && col.id !== "actions"
-    );
 
-    const worksheetData = [
-      exportOptions.includeHeaders !== false
-        ? exportableColumns.map((col) => col.header)
-        : [],
-      ...processedData.map((row) =>
-        exportableColumns.map((col) => {
-          const accessor =
-            typeof col.accessorKey === "function"
-              ? col.accessorKey
-              : (row: T) => row[col.accessorKey as keyof T];
-          return accessor(row);
-        })
-      ),
-    ].filter((row) => row.length > 0);
+    let worksheetData: any[][] = [];
+
+    if (exportOptions.exportAllFields) {
+      // Export all fields from raw data
+      const keys = getAllDataKeys(data);
+      worksheetData = [
+        exportOptions.includeHeaders !== false ? keys : [],
+        ...data.map((row) => keys.map((key) => (row as any)[key] ?? "")),
+      ].filter((row) => row.length > 0);
+    } else {
+      // Export only columns
+      const exportableColumns = columns.filter(
+        (col) => col.exportable !== false && col.id !== "actions"
+      );
+      worksheetData = [
+        exportOptions.includeHeaders !== false
+          ? exportableColumns.map((col) => col.header)
+          : [],
+        ...data.map((row) =>
+          exportableColumns.map((col) => {
+            const accessor =
+              typeof col.accessorKey === "function"
+                ? col.accessorKey
+                : (row: T) => row[col.accessorKey as keyof T];
+            return accessor(row);
+          })
+        ),
+      ].filter((row) => row.length > 0);
+    }
 
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
     const workbook = XLSX.utils.book_new();
@@ -343,32 +397,42 @@ export function DataTable<T>({
     const filename =
       exportOptions.filename ||
       `${title || "data"}_${new Date().toISOString().split("T")[0]}.pdf`;
-    const exportableColumns = columns.filter(
-      (col) => col.exportable !== false && col.id !== "actions"
-    );
 
     const doc = new jsPDF();
 
-    // Add title if provided
     if (title) {
       doc.setFontSize(16);
       doc.text(title, 14, 20);
     }
 
-    // Prepare table data
-    const tableHeaders = exportableColumns.map((col) => col.header);
-    const tableData = processedData.map((row) =>
-      exportableColumns.map((col) => {
-        const accessor =
-          typeof col.accessorKey === "function"
-            ? col.accessorKey
-            : (row: T) => row[col.accessorKey as keyof T];
-        const value = accessor(row);
-        return String(value || "");
-      })
-    );
+    let tableHeaders: string[] = [];
+    let tableData: string[][] = [];
 
-    // Add table
+    if (exportOptions.exportAllFields) {
+      // Export all fields from raw data
+      const keys = getAllDataKeys(data);
+      tableHeaders = keys;
+      tableData = data.map((row) =>
+        keys.map((key) => String((row as any)[key] ?? ""))
+      );
+    } else {
+      // Export only columns
+      const exportableColumns = columns.filter(
+        (col) => col.exportable !== false && col.id !== "actions"
+      );
+      tableHeaders = exportableColumns.map((col) => col.header);
+      tableData = data.map((row) =>
+        exportableColumns.map((col) => {
+          const accessor =
+            typeof col.accessorKey === "function"
+              ? col.accessorKey
+              : (row: T) => row[col.accessorKey as keyof T];
+          const value = accessor(row);
+          return String(value || "");
+        })
+      );
+    }
+
     (doc as any).autoTable({
       head: [tableHeaders],
       body: tableData,
@@ -441,7 +505,6 @@ export function DataTable<T>({
     return cols;
   }, [columns, actions]);
 
-  // Render skeleton rows
   const renderSkeletonRows = () => {
     return Array.from({ length: skeletonRows }, (_, index) => (
       <TableRow key={`skeleton-${index}`}>
@@ -454,7 +517,6 @@ export function DataTable<T>({
     ));
   };
 
-  // Render empty state
   const renderEmptyState = () => {
     if (emptyComponent) {
       return emptyComponent;
@@ -499,7 +561,7 @@ export function DataTable<T>({
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                  name='search'
+                    name="search"
                     placeholder={searchPlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -690,7 +752,7 @@ export function DataTable<T>({
                     const actualIndex = startIndex + rowIndex;
                     const rowId = getRowId(row, actualIndex);
                     return (
-                      <tr
+                      <TableRow
                         key={String(rowId)}
                         className={` ${onRowClick ? "cursor-pointer" : ""} ${
                           selectedRows.has(rowId) ? "bg-blue-50" : ""
@@ -702,13 +764,16 @@ export function DataTable<T>({
                         onClick={onRowClick ? () => onRowClick(row) : undefined}
                       >
                         {enhancedColumns.map((column) => (
-                          <td className="border-b px-2 text-xs truncate max-w-[130px]">
+                          <TableCell
+                            key={column.id}
+                            className="border-b py-1 px-2 text-xs truncate max-w-[130px]"
+                          >
                             {column.cell
                               ? column.cell(row, rowIndex)
                               : String(getAccessor(column)(row))}
-                          </td>
+                          </TableCell>
                         ))}
-                      </tr>
+                      </TableRow>
                     );
                   })}
             </TableBody>

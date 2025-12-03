@@ -25,9 +25,16 @@ import { tesaApplicationRequest } from "@/models/request/profileRequest";
 import { useProfileStore } from "@/store/profile";
 import { ErrorHandler } from "@/service/httpClient/errorHandler";
 import { QucoonLogo } from "@/public/svgs/qucoon-logo";
+import { PaymentCard } from "./shared/payment-card";
+import { svgsLinks } from "@/public/assetLinks";
+import { useState } from "react";
+import NiceModal from "@ebay/nice-modal-react";
+import { ModalConstant } from "./modals/register";
 
 export const TesaApplicationForm = () => {
   const [createProfile, { isLoading }] = useCreateProfileMutation();
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [paymentType,setPaymentType] = useState('')
   const {
     setFirstName,
     setEmail,
@@ -94,6 +101,7 @@ export const TesaApplicationForm = () => {
       },
     },
     onSubmit: async (values) => {
+      setLoadingPlan(paymentType);
       try {
         const payload: tesaApplicationRequest = {
           personalInformation: {
@@ -132,21 +140,22 @@ export const TesaApplicationForm = () => {
             specialization: values.skillsInformation.specialization,
             skills: values.skillsInformation.skills,
           },
+          paymentType:paymentType as 'Full Payment' | 'Pay In Installement' | 'One Year Plan'
         };
         console.log(payload, "payload");
         const res = await createProfile(payload).unwrap();
         await setFirstName(values.personalInformation.firstName);
-        await setEmail(values.personalInformation.email);
+        NiceModal.show(ModalConstant.SuccessModal)
         await setLastName(values.personalInformation.lastName);
         await setId(res?.data?.id);
-
-        setStep(5);
-        toast.success(res?.message);
+        setPaymentType("")
       } catch (error) {
         console.error(error);
         toast.error(ErrorHandler.extractMessage(error), {
           position: "top-right",
         });
+      }finally {
+        setLoadingPlan(null);
       }
     },
     enableReinitialize: true,
@@ -211,7 +220,7 @@ export const TesaApplicationForm = () => {
     if (Object.keys(errors).length > 0) return displayValidationErrors(errors);
 
     // Don't auto-advance to step 5, let them click "Next" to get there
-    if (step < 4) setStep(step + 1); // Changed from 5 to 4
+    if (step < 5) setStep(step + 1); // Changed from 5 to 4
   };
 
   const handlePrevious = () => step > 1 && setStep(step - 1);
@@ -229,7 +238,6 @@ export const TesaApplicationForm = () => {
     // Validate based on current step
     return !hasErrors && formik.isValid;
   };
-
   return (
     <div className="flex w-full h-screen overflow-hidden">
       <StepIndicator steps={stepIndicators} />
@@ -293,53 +301,27 @@ export const TesaApplicationForm = () => {
             </motion.div>
           </StepperLayout>
         )}
-        {step === 4 && (
-          <div className="flex flex-col w-full h-screen">
-            <div className="flex-1 overflow-y-auto">
-              <div className="w-full max-w-3xl mx-auto px-6 lg:px-10 py-8 mt-10 lg:pt-10 lg:mb-32 pb-32">
-                <div className="mb-8 lg:mb-12">
-                  <h1 className="font-bold text-2xl lg:text-3xl text-gray-900 mb-2">
-                    Skills & Certifications
-                  </h1>
-                  <p className="text-gray-600 text-sm lg:text-base">
-                    We&apos;d love to know more about your skillsets &
-                    certifications
-                  </p>
-                </div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: -40 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                >
-                  <Skills formik={formik as any} />
-                </motion.div>
-              </div>
-            </div>
-
-            {/* CUSTOM FOOTER FOR FINAL STEP */}
-            <div className="fixed bottom-0 left-0 lg:left-[30%] right-0 bg-white border-t border-gray-200 ">
-              <div className="w-full mx-auto px-6 lg:px-12 py-5">
-                <div className="flex justify-between items-center">
-                  <Button
-                    onClick={handlePrevious}
-                    variant={"secondary"}
-                    prefixIcon={<ArrowLeft />}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    onClick={() => formik.handleSubmit()}
-                    loading={isLoading}
-                    disabled={!isCurrentStepValid()}
-                  >
-                    Submit Application
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
+          {step === 4 && (
+          <StepperLayout
+            title="Skills & Certifications"
+            subtitle="We&apos;d love to know more about your skillsets &
+                    certifications"
+            handleNext={handleNext}
+            showPrevious={true}
+            handlePrevious={handlePrevious}
+            disabled={!isCurrentStepValid()}
+          >
+            <motion.div
+              initial={{ opacity: 0, x: -40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+               <Skills formik={formik as any} />
+            </motion.div>
+          </StepperLayout>
         )}
+        
+        
         {step === 5 && (
           <div className="flex flex-col w-full h-screen">
             <div className="flex-1 overflow-y-auto">
@@ -372,7 +354,79 @@ export const TesaApplicationForm = () => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, ease: "easeOut" }}
                   >
-                    <PaymentOptions />
+ <div className="w-full flex flex-wrap justify-center gap-6 py-10 ">
+      <PaymentCard
+        title="Full Payment"
+        image={svgsLinks.looper1}
+        price="₦1,000,000"
+        showMonth={false}
+        description="One-time payment."
+        details={[
+          "Instant activation",
+          "No extra fees",
+          "Full access immediately",
+        ]}
+        isLoading={loadingPlan === "pay-now"}
+        buttonAction={() => {
+          formik.handleSubmit()
+          setPaymentType('Full Payment')
+        }}
+      />
+
+      <PaymentCard
+        title="Pay In Installment"
+        price="₦350,000"
+        showMonth={true}
+        image={svgsLinks.looper2}
+        description="Split your payment across three months."
+        details={[
+          "50% upfront payment",
+          "Remaining 50% next month",
+          "Access after first payment",
+        ]}
+        isLoading={loadingPlan === "Pay In Installment"}
+        buttonAction={() => {
+          formik.handleSubmit()
+          setPaymentType('Pay In Installment')
+        }}
+      />
+
+      <PaymentCard
+        title="12-Month Pay Later"
+        price="₦83,000"
+        image={svgsLinks.looper3}
+        showMonth={true}
+        description="Spread payments across 1 year."
+        details={[
+          "Lowest monthly cost",
+          "Interest may apply",
+          "Access after first payment",
+        ]}
+        highlighted
+        isLoading={loadingPlan === "One Year Plan"}
+        buttonAction={() => {
+          formik.handleSubmit()
+          setPaymentType('One Year Plan')
+        }}
+      />
+
+      <PaymentCard
+        title="Loan Option"
+        image={svgsLinks.looper4}
+        showMonth={false}
+        price="Flexible"
+        inactive
+        description="Finance through partner lenders."
+        details={["Coming soon"]}
+      />
+    </div>
+    <Button
+                onClick={handlePrevious}
+                variant={"secondary"}
+                prefixIcon={<ArrowLeft />}
+              >
+                Previous
+              </Button>
                   </motion.div>
                 </div>
               </div>

@@ -32,7 +32,7 @@ export const profileColumn: ColumnDef<ProfileData>[] = [
   },
   {
     id: "gpa",
-    header: "Gpa",
+    header: "GPA",
     accessorKey: "gpa",
     sortable: true,
     cell: (row) => <span>{row.gpa}</span>,
@@ -81,6 +81,14 @@ export const profileColumn: ColumnDef<ProfileData>[] = [
   },
   
   {
+    id: "paymentType",
+    header: "Payment Type",
+    accessorKey: "paymentType",
+    sortable: true,
+    cell: (row) => <span className=" ">{row.paymentType}</span>,
+  },
+  
+  {
     id: "created_at",
     header: "Date Created",
     headerClassName: "text-right",
@@ -88,7 +96,7 @@ export const profileColumn: ColumnDef<ProfileData>[] = [
     sortable: true,
     cell: (row) => (
       <span className="text-right line-clamp-1 block ">
-        {formatDate(row.created_at, 'MM dd')}
+        {formatDate(row.created_at, 'MM/dd/yyyy')}
       </span>
     ),
   },
